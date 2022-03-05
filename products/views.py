@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product
 from django.db.models import Q
-from .models import Product
+from .models import Product, Category
 
 # Create your views here.
 
@@ -9,8 +9,15 @@ def all_products(request):
     """ A view to show all products, including sorting and search queries """
 
     products = Product.objects.all()
+    product = None
+    categories= None
 
     if request.GET:
+        if 'category' in request.Get:
+            categories = request.Get['category'].split(',')
+            products = products.filter(category_name_in=categories)
+            categories = Category.objects.filter(name_in=categories)
+
         if 'q' in request.GET:
             query = request.GET['q']
             if not query:
@@ -22,6 +29,8 @@ def all_products(request):
 
     context = {
         'products': products,
+        'search_term': query,
+        'current_categories': categories,
     }
 
     return render(request, 'products/products.html', context)
